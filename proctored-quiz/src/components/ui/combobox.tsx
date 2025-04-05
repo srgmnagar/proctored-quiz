@@ -36,7 +36,7 @@ export function Combobox({ options, value, onValueChange, placeholder = "Select 
     variant="outline"
     role="combobox"
     aria-expanded={open}
-     className="border border-gray-500 bg-transparent rounded-none text-white p-2  w-full justify-between"
+     className="border border-gray-500  text-white p-5  w-full rounded-none bg-transparent"
   >
     {value ? options.find((option) => option.value === value)?.label : placeholder}
     <ChevronsUpDown className="opacity-50" />

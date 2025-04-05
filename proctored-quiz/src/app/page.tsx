@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Orbitron } from "next/font/google";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox"; // ✅ Corrected import
+import { Combobox } from "@/components/ui/combobox";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -19,6 +19,8 @@ export default function Home() {
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [difficulty, setDifficulty] = useState("easy");
+
+  const [categoryError, setCategoryError] = useState("");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -39,6 +41,18 @@ export default function Home() {
   }, []);
 
   const handleStartTest = () => {
+    let valid = true;
+
+
+    if (!selectedCategory) {
+      setCategoryError("Please select a category.");
+      valid = false;
+    } else {
+      setCategoryError("");
+    }
+
+    if (!valid) return;
+
     router.push(
       `/test?numQuestions=${numQuestions}&category=${selectedCategory}&difficulty=${difficulty}`
     );
@@ -54,38 +68,46 @@ export default function Home() {
     >
       <main className="text-white w-full md:max-w-[70%] px-6">
         <div className="text-center flex flex-col gap-9">
-          <h1 className="text-xl sm:text-5xl font-semibold text-white mb-5 font-orbitron">
+          <h1 className="text-3xl sm:text-5xl font-semibold text-white mb-3 font-orbitron">
             <span className="bg-gradient-to-r from-[#61daff] to-[#E100FF] text-transparent bg-clip-text">
               Customize Your Quiz Experience
             </span>
           </h1>
-  
-          <div className="flex gap-10 justify-center sm:justify-between font-Sora">
+
+          <div className="flex flex-col gap-8 justify-center items-center">
             {/* Number of Questions Input */}
-            <div className="flex flex-col w-full sm:w-1/3 min-w-[100px]">
-              <label  className="font-extralight ">Number of Questions:</label>
+            <div className="flex flex-col gap-1 w-full sm:w-1/3 min-w-[300px]">
+              <label
+                style={{ fontWeight: 100 }}
+                className="font-extralight font-orbitron text-md"
+              >
+                Number of Questions:
+              </label>
+
               <input
                 type="number"
+                min="1"
                 value={numQuestions}
                 onChange={(e) => setNumQuestions(Number(e.target.value))}
-                className="border border-gray-500  text-white p-2  w-full"
+                className="border border-gray-500 text-white p-2 w-full bg-transparent"
               />
             </div>
-  
+
             {/* Category Selection */}
-            <div className="flex flex-col w-full sm:w-1/3 min-w-[140px]">
-              <label className="text-sm">Category:</label>
+            <div className="flex flex-col gap-1 w-full sm:w-1/3 min-w-[140px]">
+              <label className="text-md font-extralight font-orbitron">Category:</label>
               <Combobox
                 options={[{ value: "", label: "Any Category" }, ...categories]}
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
                 placeholder="Select Category"
               />
+              {categoryError && <p className="text-red-400 text-sm mt-1">{categoryError}</p>}
             </div>
-  
+
             {/* Difficulty Selection */}
-            <div className="flex flex-col w-full sm:w-1/3 min-w-[120px]">
-              <label className="text-sm">Difficulty:</label>
+            <div className="flex flex-col gap-1 w-full sm:w-1/3 min-w-[120px]">
+              <label className="text-md font-extralight font-orbitron">Difficulty:</label>
               <Combobox
                 options={[
                   { value: "easy", label: "Easy" },
@@ -97,18 +119,16 @@ export default function Home() {
                 placeholder="Select Difficulty"
               />
             </div>
-          </div> {/* ✅ Closing the div for inputs */}
-  
-          {/* ✅ Keeping Button inside flex column container */}
+          </div>
+
           <Button
             onClick={handleStartTest}
             className="bg-gradient-to-r from-[#61b5ff] to-[#E100FF] text-white font-orbitron font-semibold hover:scale-105 text-xl px-8 py-5 rounded-sm hover:bg-blue-600 transition mx-auto"
           >
             Start Test
           </Button>
-        </div> {/* ✅ Closing text-center flex container */}
-      </main> {/* ✅ Closing main properly */}
+        </div>
+      </main>
     </div>
   );
-  
 }
