@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -11,7 +21,14 @@ type Question = {
   selectedAnswer?: string;
 };
 
-const shuffle = (array: string[]) => [...array].sort(() => Math.random() - 0.5);
+const shuffle = (array: string[]): string[] => {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
 
 const TestPage = () => {
   const router = useRouter();
@@ -21,6 +38,9 @@ const TestPage = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [timeRemaining, setTimeRemaining] = useState(120);
   const [testCompleted, setTestCompleted] = useState(false);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMsg, setDialogMsg] = useState("");
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -63,10 +83,10 @@ const TestPage = () => {
       return () => clearInterval(timer);
     } else if (timeRemaining === 0 && !testCompleted) {
       setTestCompleted(true);
-      alert("Time's up!");
-      router.push("/candidate/dashboard");
+      setDialogMsg("Time's up! Please click OK to continue.");
+      setDialogOpen(true);
     }
-  }, [timeRemaining, testCompleted, router]);
+  }, [timeRemaining, testCompleted]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -74,17 +94,18 @@ const TestPage = () => {
         tabSwitchCount.current++;
         if (tabSwitchCount.current >= 2) {
           setTestCompleted(true);
-          alert("Test ended due to excessive tab switching.");
-          router.push("/candidate/dashboard");
+          setDialogMsg("Test ended due to excessive tab switching. Please click OK to go back.");
+          setDialogOpen(true);
         } else {
-          alert(`Tab change detected. You have ${2 - tabSwitchCount.current} attempts left.`);
+          setDialogMsg(`Tab switch detected. You have ${2 - tabSwitchCount.current} attempts left.`);
+          setDialogOpen(true);
         }
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [router]);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -105,14 +126,36 @@ const TestPage = () => {
 
   const handleSubmit = () => {
     setTestCompleted(true);
-    alert(`Test completed! Your score is: ${calculateScore()} / ${questions.length}`);
-    router.push("/candidate/profile");
+    setDialogMsg(`Test completed! Your score is: ${calculateScore()} / ${questions.length}`);
+    setDialogOpen(true);
+  };
+
+  const handleDialogContinue = () => {
+    if (timeRemaining === 0 || tabSwitchCount.current >= 2 || testCompleted) {
+      router.push("/"); 
+    }
   };
 
   return (
     <div className="min-h-screen p-6 px-10 font-sans" style={{ background: "linear-gradient(115deg, rgba(38, 0, 74, 0.73) 2.22%, rgba(105, 36, 171, 0.59) 103.12%)" }}>
+      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Notice</AlertDialogTitle>
+            <AlertDialogDescription>{dialogMsg}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleDialogContinue}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <h1 className="text-5xl font-bold mb-4 text-white">Test</h1>
-      <div className="mb-4 text-2xl font-bold text-white">Time Remaining: {formatTime(timeRemaining)}</div>
+      <div className="mb-4 text-2xl font-bold text-white">
+        Time Remaining: {formatTime(timeRemaining)}
+      </div>
 
       {questions.length === 0 ? (
         <p className="text-white text-xl">Loading questions...</p>

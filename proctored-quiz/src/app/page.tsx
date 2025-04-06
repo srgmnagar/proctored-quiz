@@ -1,11 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Orbitron } from "next/font/google";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -19,8 +29,10 @@ export default function Home() {
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [difficulty, setDifficulty] = useState("easy");
-
   const [categoryError, setCategoryError] = useState("");
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const startBtnClicked = useRef(false); // prevents dialog open on load
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -41,18 +53,29 @@ export default function Home() {
   }, []);
 
   const handleStartTest = () => {
-    let valid = true;
-
-
     if (!selectedCategory) {
       setCategoryError("Please select a category.");
-      valid = false;
+      return;
     } else {
       setCategoryError("");
     }
+    startBtnClicked.current = true;
+    setDialogOpen(true); // open the dialog
+  };
 
-    if (!valid) return;
+  const handleConfirm = async () => {
+    setDialogOpen(false);
 
+    // Ask for fullscreen permission
+    if (typeof document !== "undefined" && document.documentElement.requestFullscreen) {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch (err) {
+        console.warn("Fullscreen request failed", err);
+      }
+    }
+
+    // Redirect to the test
     router.push(
       `/test?numQuestions=${numQuestions}&category=${selectedCategory}&difficulty=${difficulty}`
     );
@@ -75,15 +98,8 @@ export default function Home() {
           </h1>
 
           <div className="flex flex-col gap-8 justify-center items-center">
-            {/* Number of Questions Input */}
             <div className="flex flex-col gap-1 w-full sm:w-1/3 min-w-[300px]">
-              <label
-                style={{ fontWeight: 100 }}
-                className="font-extralight font-orbitron text-md"
-              >
-                Number of Questions:
-              </label>
-
+              <label className="font-extralight font-orbitron text-md">Number of Questions:</label>
               <input
                 type="number"
                 min="1"
@@ -93,7 +109,6 @@ export default function Home() {
               />
             </div>
 
-            {/* Category Selection */}
             <div className="flex flex-col gap-1 w-full sm:w-1/3 min-w-[140px]">
               <label className="text-md font-extralight font-orbitron">Category:</label>
               <Combobox
@@ -105,7 +120,6 @@ export default function Home() {
               {categoryError && <p className="text-red-400 text-sm mt-1">{categoryError}</p>}
             </div>
 
-            {/* Difficulty Selection */}
             <div className="flex flex-col gap-1 w-full sm:w-1/3 min-w-[120px]">
               <label className="text-md font-extralight font-orbitron">Difficulty:</label>
               <Combobox
@@ -129,6 +143,36 @@ export default function Home() {
           </Button>
         </div>
       </main>
+
+      {/* Alert Dialog for Confirmation */}
+      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Test Instructions</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4 text-sm text-muted-foreground">
+  <p>This test will be time-bound and actively monitored. Please ensure the following:</p>
+
+  <ul className="list-disc list-inside space-y-2 pl-2">
+    <li>Do not switch tabs or minimize the window during the test.</li>
+    <li>Unusual activity may result in automatic termination.</li>
+    <li>The test will begin in fullscreen mode for better focus.</li>
+  </ul>
+
+  <p>Are you ready to begin?</p>
+</AlertDialogDescription>
+
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+          <AlertDialogCancel className="bg-muted hover:bg-muted/80 transition">Cancel</AlertDialogCancel>
+          <AlertDialogAction
+        className="bg-violet-700 text-white hover:bg-violet-800 transition"
+        onClick={handleConfirm}
+      >
+        Start Test
+      </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
