@@ -60,13 +60,12 @@ export default function Home() {
       setCategoryError("");
     }
     startBtnClicked.current = true;
-    setDialogOpen(true); // open the dialog
+    setDialogOpen(true); 
   };
 
   const handleConfirm = async () => {
     setDialogOpen(false);
 
-    // Ask for fullscreen permission
     if (typeof document !== "undefined" && document.documentElement.requestFullscreen) {
       try {
         await document.documentElement.requestFullscreen();
@@ -75,7 +74,7 @@ export default function Home() {
       }
     }
 
-    // Redirect to the test
+    // redirecting to the test page
     router.push(
       `/test?numQuestions=${numQuestions}&category=${selectedCategory}&difficulty=${difficulty}`
     );
@@ -103,6 +102,7 @@ export default function Home() {
               <input
                 type="number"
                 min="1"
+                max="50"
                 value={numQuestions}
                 onChange={(e) => setNumQuestions(Number(e.target.value))}
                 className="border border-gray-500 text-white p-2 w-full bg-transparent"
@@ -144,7 +144,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Alert Dialog for Confirmation */}
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
