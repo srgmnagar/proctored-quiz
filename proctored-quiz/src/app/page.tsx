@@ -69,6 +69,7 @@ export default function Home() {
     if (typeof document !== "undefined" && document.documentElement.requestFullscreen) {
       try {
         await document.documentElement.requestFullscreen();
+        localStorage.setItem("quiz_started", "true");
       } catch (err) {
         console.warn("Fullscreen request failed", err);
       }
