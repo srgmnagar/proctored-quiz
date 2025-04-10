@@ -8,7 +8,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
@@ -18,7 +17,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-// Accept props for dynamic options
 interface ComboboxProps {
   options: { value: string; label: string }[];
   value: string;
@@ -45,7 +43,6 @@ export function Combobox({ options, value, onValueChange, placeholder = "Select 
 
       <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput placeholder="Search..." />
           <CommandList>
             <CommandEmpty>No options found.</CommandEmpty>
             <CommandGroup>
