@@ -32,7 +32,7 @@ export default function Home() {
   const [categoryError, setCategoryError] = useState("");
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const startBtnClicked = useRef(false); // prevents dialog open on load
+  const startBtnClicked = useRef(false); 
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -91,7 +91,7 @@ export default function Home() {
     >
       <main className="text-white w-full md:max-w-[70%] px-6">
         <div className="text-center flex flex-col gap-9">
-          <h1 className="text-3xl sm:text-5xl font-semibold text-white mb-3 font-orbitron">
+          <h1 className=" text-3xl sm:text-5xl font-semibold text-white mb-3 font-orbitron">
             <span className="bg-gradient-to-r from-[#61daff] to-[#E100FF] text-transparent bg-clip-text">
               Customize Your Quiz Experience
             </span>

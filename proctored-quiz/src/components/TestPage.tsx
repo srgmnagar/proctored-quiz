@@ -206,7 +206,7 @@ const TestPage = () => {
 
   return (
     <>
-      {/* Timer UI */}
+    
       <div className="fixed top-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-4 shadow-lg z-50">
         <div className="text-3xl font-mono font-bold text-pink-300">
           {formatTime(timeRemaining)}
