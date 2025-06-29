@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import LoadingScreen from "./LoadingScreen";
+import { motion } from "framer-motion";
 
 type Question = {
   question: string;
@@ -47,8 +49,17 @@ const TestPage = () => {
   const [testCompleted, setTestCompleted] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMsg, setDialogMsg] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let timerDone = false;
+    let questionsDone = false;
+
+    const timer = setTimeout(() => {
+      timerDone = true;
+      if (questionsDone) setLoading(false);
+    }, 2000); // 2 seconds
+
     const fetchQuestions = async () => {
       try {
         const amount = searchParams.get("numQuestions");
@@ -76,12 +87,17 @@ const TestPage = () => {
 
         setQuestions(formatted);
         setTimeRemaining(formatted.length * 30);
+        questionsDone = true;
+        if (timerDone) setLoading(false);
       } catch (err) {
         console.error("Error fetching questions:", err);
+        questionsDone = true;
+        if (timerDone) setLoading(false);
       }
     };
 
     fetchQuestions();
+    return () => clearTimeout(timer);
   }, [searchParams]);
 
   const calculateScore = () =>
@@ -204,6 +220,10 @@ const TestPage = () => {
     }
   }, []);
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <>
     
@@ -213,9 +233,13 @@ const TestPage = () => {
         </div>
       </div>
 
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -40 }}
+        transition={{ duration: 0.5 }}
         className="min-h-screen p-6 sm:px-12 bg-gradient-to-tr from-[#100C24] to-[#392B6A] text-white"
-        style={{ userSelect: "none" }} // ⛔ Prevent text selection
+        style={{ userSelect: "none" }}
       >
         <div className="max-w-3xl mx-auto space-y-6">
           <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -245,8 +269,11 @@ const TestPage = () => {
           ) : (
             <div className="space-y-6">
               {questions.map((q, index) => (
-                <div
+                <motion.div
                   key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * index, duration: 0.4 }}
                   className="bg-white/10 border border-white/20 backdrop-blur-md p-5 rounded-xl shadow-md transition hover:shadow-lg"
                 >
                   <p className="font-medium text-lg mb-4">{q.question}</p>
@@ -273,23 +300,25 @@ const TestPage = () => {
                       </label>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
 
           {!testCompleted && questions.length > 0 && (
             <div className="flex justify-center pt-4">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.08, boxShadow: "0 0 10px #E100FF, 0 0 32px #61daff" }}
+                whileTap={{ scale: 0.96 }}
                 onClick={handleSubmit}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg text-lg font-semibold shadow hover:scale-105 hover:shadow-xl transition"
+                className="bg-gradient-to-r from-[#61b5ff] to-[#E100FF] text-white font-orbitron font-semibold text-xl px-8 py-2 rounded-sm transition mx-auto shadow-lg"
               >
                 Submit
-              </button>
+              </motion.button>
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 };

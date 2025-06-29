@@ -4,7 +4,7 @@ import TestPage from "@/components/TestPage";
 
 export default function TestWrapper() {
   return (
-    <Suspense fallback={<div className="p-6 text-white">Loading test...</div>}>
+    <Suspense fallback={<div className=""></div>}>
       <TestPage />
     </Suspense>
   );
