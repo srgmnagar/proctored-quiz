@@ -21,7 +21,7 @@ A secure and dynamic quiz platform built with **Next.js**, **TypeScript**, and *
 ## 🛠 Tech Stack
 
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS
-- **UI Components**: Shadcn/ui, Headless UI, Framer Motion
+- **UI Components**: Shadcn/ui Framer Motion
 - **API**: [Open Trivia DB](https://opentdb.com/)
 - **Hosting**: [Vercel](https://vercel.com/)
 
