@@ -43,6 +43,7 @@ const TestPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabSwitchCount = useRef(0);
+  const hasRecentlyViolated = useRef(false);
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [timeRemaining, setTimeRemaining] = useState(120);
@@ -103,44 +104,61 @@ const TestPage = () => {
   const calculateScore = () =>
     questions.filter((q) => q.selectedAnswer === q.correct_answer).length;
 
-  useEffect(() => {
-    const handleTabOrFullscreenViolation = () => {
-      if (document.hidden) {
-        tabSwitchCount.current++;
 
-        if (tabSwitchCount.current >= 2) {
-          setTestCompleted(true);
-          setDialogMsg(
-            `Test terminated due to tab switching.\nYour score is: ${calculateScore()} / ${questions.length}`
-          );
-          setDialogOpen(true);
-        } else {
-          setDialogMsg(
-            `Tab switch detected. You have ${2 - tabSwitchCount.current} attempt(s) left.`
-          );
-          setDialogOpen(true);
-        }
-      }
-    };
+useEffect(() => {
+  const handleViolation = () => {
+    if (hasRecentlyViolated.current || testCompleted) return;
 
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement && !testCompleted) {
-        setTestCompleted(true);
-        setDialogMsg(
-          `Test terminated due to exiting fullscreen.\nYour score is: ${calculateScore()} / ${questions.length}`
-        );
-        setDialogOpen(true);
-      }
-    };
+    hasRecentlyViolated.current = true;
+    setTimeout(() => {
+      hasRecentlyViolated.current = false;
+    }, 1000); 
+    tabSwitchCount.current++;
 
-    document.addEventListener("visibilitychange", handleTabOrFullscreenViolation);
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    if (tabSwitchCount.current >= 2) {
+      setTestCompleted(true);
+      setDialogMsg(
+        `Test terminated due to tab or window switching.\nYour score is: ${calculateScore()} / ${questions.length}`
+      );
+      setDialogOpen(true);
+    } else {
+      setDialogMsg(
+        `Tab or window switch detected. You have ${2 - tabSwitchCount.current} attempt(s) left.`
+      );
+      setDialogOpen(true);
+    }
+  };
 
-    return () => {
-      document.removeEventListener("visibilitychange", handleTabOrFullscreenViolation);
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, [questions, testCompleted]);
+  const handleVisibilityChange = () => {
+    if (document.hidden) handleViolation();
+  };
+
+  const handleWindowBlur = () => {
+    if (!document.hidden) handleViolation();
+  };
+
+  const handleFullscreenChange = () => {
+    if (!document.fullscreenElement && !testCompleted) {
+      setTestCompleted(true);
+      setDialogMsg(
+        `Test terminated due to exiting fullscreen.\nYour score is: ${calculateScore()} / ${questions.length}`
+      );
+      setDialogOpen(true);
+    }
+  };
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  window.addEventListener("blur", handleWindowBlur);
+  document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+  return () => {
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    window.removeEventListener("blur", handleWindowBlur);
+    document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  };
+}, [questions, testCompleted]);
+
+
 
   useEffect(() => {
     if (timeRemaining > 0 && !testCompleted) {
